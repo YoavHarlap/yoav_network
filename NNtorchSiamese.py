@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 # train = datasets.MNIST(root="data", download=True, train=True, transform=ToTensor())
 # dataset = DataLoader(train, 32)
 from livelossplot import PlotLosses
+from NN_torch_functions import euclidean_distance
 import IPython
 # Create an instance of the PlotLosses class
 liveplot = PlotLosses()
@@ -24,8 +25,8 @@ images, labels = make_cryo_imgs_arr(len_images_arr, make_all_images=True)
 training_data = makeSiameseDataset(images[:len_train], labels[:len_train])
 test_data = makeSiameseDataset(images[:len_train], labels[:len_train])
 
-train_dataloader = DataLoader(training_data, batch_size=50, shuffle=True)
-test_dataloader = DataLoader(test_data, batch_size=50, shuffle=True)
+train_dataloader = DataLoader(training_data, batch_size=20, shuffle=True)
+test_dataloader = DataLoader(test_data, batch_size=20, shuffle=True)
 # examples = next(iter(train_dataloader))
 #
 # for label, img  in enumerate(examples):
@@ -51,10 +52,12 @@ class ImageClassifier(nn.Module):
         )
 
 
-    def forward(self, x):
-        output1 = self.model(x[0])
-        # output2 = self.model(x[1])
-        output2 = (output1+3)*7
+    def forward(self, x1,x2):
+        # output1 = self.model(x[0])
+        # # output2 = self.model(x[1])
+        # output2 = (output1+3)*7
+        output1 = self.model(x1)
+        output2 = self.model(x2)
         return output1, output2
 
 
@@ -85,24 +88,33 @@ if __name__ == "__main__":
         total_val_loss = 0
 
         # model.train()
-        for i, (data, target) in enumerate(train_dataloader):
+        for i, (imagesA,imagesB, target) in enumerate(train_dataloader):
             # print("11")
             # print("22")
 
-            imagesA,imagesB = data[0].to('cuda:0'),data[1].to('cuda:0')
-            images = [imagesA,imagesB]
+            # imagesA,imagesB = data[0].to('cuda:0'),data[1].to('cuda:0')
+            # images = [imagesA,imagesB]
+            imgsA = imagesA.to('cuda:0')
+            imgsB = imagesB.to('cuda:0')
+
             labels = target.to('cuda:0')
 
             # Forward propagation
-            outputs = clf(images)
+            outputs = clf(imgsA,imgsB)
 
 
             # Calculating loss with softmax to obtain cross entropy loss
 
             # loss = criterion(outputs, labels)
-            outputs = outputs[0]-outputs[1]
-            labels = labels.squeeze()
-            loss = loss_fn(outputs, labels)  # ....>
+            outputs = euclidean_distance(outputs).to('cuda:0')
+            # labels = labels.squeeze()
+
+            labels_one_hot = nn.functional.one_hot(labels, num_classes=2)
+
+
+            loss = loss_fn(outputs, labels_one_hot.float())  # ....>
+
+            # loss = loss_fn(outputs, labels)  # ....>
 
             opt.zero_grad()
             # Backward prop
@@ -137,14 +149,14 @@ if __name__ == "__main__":
             total = 0
             total_losss = 0
 
-            for data, target in test_dataloader:
+            for imagesA, imagesB, target in test_dataloader:
 
-                imagesA, imagesB = data[0].to('cuda:0'), data[1].to('cuda:0')
-                images = [imagesA, imagesB]
-
+                # imagesA, imagesB = data[0].to('cuda:0'), data[1].to('cuda:0')
+                # images = [imagesA, imagesB]
+                imgsA = imagesA.to('cuda:0')
+                imgsB = imagesB.to('cuda:0')
                 labels = target.to('cuda:0')
-                outputs = clf(images)
-
+                outputs = clf(imgsA,imgsB)
 
                 outputs = outputs[0] - outputs[1]
                 labels = labels.squeeze()

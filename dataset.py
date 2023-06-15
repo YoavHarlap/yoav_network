@@ -183,4 +183,4 @@ class makeSiameseDataset(Dataset):
         #     image = self.transform(pair_images)
         # if self.target_transform:
         #     label = self.target_transform(label)
-        return pair_images, label
+        return imgA, imgB, label
