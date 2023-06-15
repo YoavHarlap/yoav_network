@@ -31,7 +31,7 @@ class ImageClassifier(nn.Module):
 # Instance of the neural network, loss, optimizer
 clf = ImageClassifier().to('cuda')
 
-with open('/home/yoavharlap/PycharmProjects/yoav_network/model_state5.pt', 'rb') as f:
+with open('/home/yoavharlap/PycharmProjects/yoav_network/model_state9.pt', 'rb') as f:
     print("pppppp")
     clf.load_state_dict(load(f))
 

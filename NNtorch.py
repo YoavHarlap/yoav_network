@@ -18,7 +18,7 @@ import IPython
 liveplot = PlotLosses()
 
 len_images_arr = 600
-len_train = 1500
+len_train = 500
 
 images, labels = make_cryo_imgs_arr(len_images_arr, make_all_images=True)
 training_data = makeDataset(images[:len_train], labels[:len_train])
@@ -45,6 +45,7 @@ class ImageClassifier(nn.Module):
             nn.Linear(64 * (360 - 6) * (360 - 6), 2)
         )
 
+
     def forward(self, x):
         return self.model(x)
 
@@ -59,7 +60,7 @@ class_weights = torch.tensor([1.0, 1.0]).to('cuda') # Higher weight for label 0
 # Create the CrossEntropyLoss criterion with class weights
 loss_fn = nn.CrossEntropyLoss(weight=class_weights)
 
-# loss_fn = nn.CrossEntropyLoss()
+loss_fn = nn.CrossEntropyLoss()
 
 # Training flow
 if __name__ == "__main__":
@@ -188,6 +189,13 @@ if __name__ == "__main__":
         liveplot.update(logs)
         # liveplot.draw()
 
-    with open('/home/yoavharlap/PycharmProjects/yoav_network/model_state5.pt', 'wb') as f:
+    with open('/home/yoavharlap/PycharmProjects/yoav_network/model_state10.pt', 'wb') as f:
         save(clf.state_dict(), f)
+
+        #5 500 3 1
+        #6 500 10 1
+        #7 500 5 1
+        #8 500 6 1
+
+
 
