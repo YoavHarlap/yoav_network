@@ -1,5 +1,6 @@
 import torch
 
+# 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
 
 def euclidean_distance(vectors):
     # unpack the vectors into separate tensors
