@@ -62,7 +62,7 @@ def make_imgs_arr_from_labels(labels, good_imgs, outliers_imgs,make_all_images):
         print(img.shape)
         imgs.append(img)
     #imgs = np.array(imgs)
-    # new_labels = torch.tensor(new_labels)
+    new_labels = torch.tensor(new_labels)
     # new_imgs = torch.tensor(new_labels)
     return imgs, labels
 
@@ -179,8 +179,8 @@ class makeSiameseDataset(Dataset):
         imgA  = pair_images[0]
         imgB = pair_images[1]
         label = self.labels[idx]
-        # if self.transform:
-        #     image = self.transform(pair_images)
-        # if self.target_transform:
-        #     label = self.target_transform(label)
-        return imgA, imgB, label
+        if self.transform:
+            image = self.transform(pair_images)
+        if self.target_transform:
+            label = self.target_transform(label)
+        return (imgA, imgB), label

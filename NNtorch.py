@@ -22,7 +22,7 @@ len_train = 500
 
 images, labels = make_cryo_imgs_arr(len_images_arr, make_all_images=True)
 training_data = makeDataset(images[:len_train], labels[:len_train])
-test_data = makeDataset(images[:len_train], labels[:len_train])
+test_data = makeDataset(images[-len_train:], labels[-len_train:])
 
 train_dataloader = DataLoader(training_data, batch_size=50, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=50, shuffle=False)

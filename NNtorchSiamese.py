@@ -21,11 +21,11 @@ import IPython
 liveplot = PlotLosses()
 
 len_images_arr = 600
-len_train = 500
+len_train = 300
 
-images, labels = make_cryo_imgs_arr(len_images_arr, make_all_images=True)
+images, labels = make_cryo_imgs_arr(len_images_arr, make_all_images=False)
 training_data = makeSiameseDataset(images[:len_train], labels[:len_train])
-test_data = makeSiameseDataset(images[:len_train], labels[:len_train])
+test_data = makeSiameseDataset(images[-len_train:], labels[-len_train:])
 
 train_dataloader = DataLoader(training_data, batch_size=20, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=20, shuffle=True)
@@ -52,7 +52,7 @@ class ImageClassifier(nn.Module):
             nn.Conv2d(64, 64, (3, 3)),
             nn.ReLU(),
             nn.Flatten(),
-            nn.Linear(64 * (360 - 6) * (360 - 6), 2)
+            nn.Linear(64 * (360 - 6) * (360 - 6), 128)
         )
 
     def forward(self, x1, x2):
@@ -75,6 +75,7 @@ loss_fn = nn.CrossEntropyLoss(weight=class_weights)
 
 loss_fn = nn.CrossEntropyLoss()
 contrastive_loss = ContrastiveLoss()
+contrastive_loss = loss_fn
 # Training flow
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
