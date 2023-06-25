@@ -67,7 +67,7 @@ loss_fn = ContrastiveLoss(margin)
 lr = 1e-3
 optimizer = optim.Adam(model.parameters(), lr=lr)
 scheduler = lr_scheduler.StepLR(optimizer, 8, gamma=0.1, last_epoch=-1)
-n_epochs = 5
+n_epochs = 0
 log_interval = 100
 fit(siamese_train_loader, siamese_test_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_interval)
 
@@ -84,41 +84,85 @@ def plot_embeddings(embeddings, targets, xlim=None, ylim=None, n_classes=n_class
     plt.legend(mnist_classes)
 
 
+
+
+#
+# def extract_embeddings(dataloader, model):
+#     with torch.no_grad():
+#         model.eval()
+#         embeddings = np.zeros((len(dataloader.dataset), 2))
+#         labels = np.zeros(len(dataloader.dataset))
+#         k = 0
+#         for images, target in dataloader:
+#             if cuda:
+#                 # images = images.cuda()
+#                 images = [img.cuda() for img in images]
+#             print(images[0].shape)
+#             embeddings[k:k+len(images)] = model.get_embedding(images).data.cpu().numpy()
+#             labels[k:k+len(images)] = target.numpy()
+#             k += len(images)
+#     return embeddings, labels
+#
+# import matplotlib.pyplot as plt
+#
+# def extract_embeddings(data_loader, model):
+#     with torch.no_grad():
+#         model.eval()
+#         for batch_idx, (data, target) in enumerate(data_loader):
+#             target = target if len(target) > 0 else None
+#             if not type(data) in (tuple, list):
+#                 data = (data,)
+#             if cuda:
+#                 data = tuple(d.cuda() for d in data)
+#                 if target is not None:
+#                     target = target.cuda()
+#
+#             outputs = model(*data)
+#
+#             if type(outputs) not in (tuple, list):
+#                 outputs = (outputs,)
+#             loss_inputs = outputs
+#             if target is not None:
+#                 target = (target,)
+#                 loss_inputs += target
+#
+#     return embeddings, labels
+
+
 def extract_embeddings(dataloader, model):
     with torch.no_grad():
         model.eval()
         embeddings = np.zeros((len(dataloader.dataset), 2))
         labels = np.zeros(len(dataloader.dataset))
         k = 0
-        # for images, target in dataloader:
-        #     if cuda:
-        #         # images = images.cuda()
-        #         images = [image.cuda() for image in images]
-        #     embeddings[k:k + len(images)] = model.get_embedding(images).data.cpu().numpy()
-        #     labels[k:k + len(images)] = target.numpy()
-        #     k += len(images)
-        for batch_idx, (data, target) in enumerate(dataloader):
-            target = target if len(target) > 0 else None
-            if not type(data) in (tuple, list):
-                data = (data,)
-            # data = torch.tensor(data)
-
+        for images, target in dataloader:
+            
             if cuda:
-                data = tuple(d.cuda() for d in data)
-
-
-                if target is not None:
-                    target = target.cuda()
-            data = torch.cat(data, dim=0)
-            data .cuda()
-            embeddings[k:k + len(data)] = model.get_embedding(data).data.cpu().numpy()
-            labels[k:k + len(data)] = target.numpy()
-            k += len(data)
+                images = [img.cuda() for img in images]
+            # length = len(images)
+            mod = model(*images)
+            length = vec_to_points(mod, embeddings, k)
+            # embeddings[k:k+length] = model(*images).numpy()
+            labels[k:k+length] = target.numpy()
+            k += length
     return embeddings, labels
 
+def vec_to_points(vector,embeddings,index):
+    vector0 = vector[0]
+    vector1 = vector[1]
+    length = len(vector0)
 
+    for i in range(length):
+        embeddings[index+i] = [vector0[i],vector1[i]]
+    return length
 
 train_embeddings_cl, train_labels_cl = extract_embeddings(siamese_train_loader, model)
 plot_embeddings(train_embeddings_cl, train_labels_cl)
 val_embeddings_cl, val_labels_cl = extract_embeddings(siamese_test_loader, model)
 plot_embeddings(val_embeddings_cl, val_labels_cl)
+plt.show()
+
+
+
+
+
